@@ -7,6 +7,16 @@ import { clientId, clientSecret, userId } from './properties.json';
 
 let listener: EventSubListener;
 
+const availableThemes = [
+	'Abyss',
+	'Red',
+	'Solarized Light',
+	'Default High Contrast',
+	'SynthWave \'84'
+];
+
+let indexTheme: number;
+
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -37,7 +47,17 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 		await listener.subscribeToChannelRedemptionAddEvents(userId, (e) => {
-			vscode.window.showInformationMessage(`${e.broadcasterDisplayName} demande ${e.rewardTitle}`);
+			vscode.window.showInformationMessage(`${e.userDisplayName} demande ${e.rewardTitle}`);
+			let index;
+			do {
+				index = Math.floor(Math.random() * availableThemes.length);
+			} while (index === indexTheme);
+			indexTheme = index;
+			const folders = vscode.workspace.workspaceFolders;
+			if (folders) {
+				const config = vscode.workspace.getConfiguration('workbench', folders[0].uri);
+				config.update('colorTheme', availableThemes[index], false);
+			}
 		});
 
 	});
