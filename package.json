@@ -10,7 +10,9 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:randomthemeselectiontwitch.helloWorld"
+    "onCommand:randomthemeselectiontwitch.helloWorld",
+    "onCommand:randomthemetwitch.connect",
+    "onCommand:randomthemetwitch.logOut"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,6 +20,14 @@
       {
         "command": "randomthemeselectiontwitch.helloWorld",
         "title": "Pick a random theme Color"
+      },
+      {
+        "command": "randomthemetwitch.connect",
+        "title": "RandomThemeTwitch : Connect to twitch"
+      },
+      {
+        "command": "randomthemetwitch.logOut",
+        "title": "RandomThemeTwitch : Log out from twitch"
       }
     ]
   },
@@ -41,5 +51,11 @@
     "mocha": "^9.2.2",
     "typescript": "^4.5.5",
     "@vscode/test-electron": "^2.1.3"
+  },
+  "dependencies": {
+    "@twurple/api": "^5.1.6",
+    "@twurple/auth": "^5.1.6",
+    "@twurple/eventsub": "^5.1.6",
+    "@twurple/eventsub-ngrok": "^5.1.6"
   }
 }

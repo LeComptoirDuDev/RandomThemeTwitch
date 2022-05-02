@@ -1,22 +1,54 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+import { ApiClient } from '@twurple/api';
+import { ClientCredentialsAuthProvider } from '@twurple/auth';
+import { EventSubListener } from '@twurple/eventsub';
+import { NgrokAdapter } from '@twurple/eventsub-ngrok';
 import * as vscode from 'vscode';
+import { clientId, clientSecret, userId } from './properties.json';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
+let listener: EventSubListener;
+
+
 export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "randomthemeselectiontwitch" is now active!');
+	// console.log('Congratulations, your extension "randomthemeselectiontwitch" is now active!');
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
+	let connection = vscode.commands.registerCommand('randomthemetwitch.connect', async () => {
+		const authProvider = new ClientCredentialsAuthProvider(
+			clientId,
+			clientSecret
+		);
+
+		const apiClient = new ApiClient({ authProvider });
+
+		await apiClient.eventSub.deleteAllSubscriptions();
+
+
+		listener = new EventSubListener({
+			apiClient,
+			adapter: new NgrokAdapter(),
+			secret: "HelloWorld",
+		});
+
+		await listener.listen();
+
+		vscode.window.showInformationMessage(`RandomThemeTwitch connected`);
+
+
+
+
+		await listener.subscribeToChannelRedemptionAddEvents(userId, (e) => {
+			vscode.window.showInformationMessage(`${e.broadcasterDisplayName} demande ${e.rewardTitle}`);
+		});
+
+	});
+
+	let logOut = vscode.commands.registerCommand('randomthemetwitch.logOut', async () => {
+		await listener.unlisten();
+		vscode.window.showInformationMessage(`RandomThemeTwitch disconnected`);
+
+	});
+
 	let disposable = vscode.commands.registerCommand('randomthemeselectiontwitch.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		// vscode.window.showInformationMessage('Coucou depuis RandomThemeSelectionTwitch!')
 		const folders = vscode.workspace.workspaceFolders;
 		if (folders) {
 			const config = vscode.workspace.getConfiguration('workbench', folders[0].uri);
@@ -25,7 +57,8 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(disposable);
+	context.subscriptions.push(connection);
+	context.subscriptions.push(logOut);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate() { }
